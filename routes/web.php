@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\TweetController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 
@@ -32,4 +33,8 @@ Route::get('api/getfile/{filename}','UserController@getFile');
 Route::get('api/getusuario/{slug_user}','UserController@getUsuario');
 // Verifica si el correo exite o no al momento de ser registrado
 Route::get('api/user/validate/email/{email}','UserController@ValidateEmail');
+// Verifica si el username exite o no al momento de ser registrado
 Route::get('api/user/validate/username/{username}','UserController@ValidateUserName');
+// CREA LOS TWEET
+Route::post('api/tweet/create','TweetController@store')->middleware(App\Http\Middleware\ApiAuthMiddleware::class);
+Route::post('api/tweet/list','TweetController@list')->middleware(App\Http\Middleware\ApiAuthMiddleware::class);

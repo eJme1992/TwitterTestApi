@@ -37,7 +37,6 @@ class JwtAuth{
          'sub'   => $User->id,
          'slug'  => $User->slug,
          'email' => $User->email,
-         'name'  => $User->fist_name.' '.$User->last_name,
          'iat'   => time(),
          'exp'   => time() + (7*24*60*60),
       );
@@ -51,7 +50,7 @@ class JwtAuth{
      	$data = array (
          'status'    =>  'succes',
          'data'      =>   $jwt,
-         'user'      =>   $decode,
+         'user'      =>   $User,
          'msj'       =>  'Login con exito'
      	);
      }
