@@ -8,16 +8,17 @@ class Tweet extends Model
 {
     protected $table = "tweets";
 
-    protected $with = ['myuser'];
+    protected $with = ['myuser','img'];
 
 
     public function myuser()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
-/*
-    public  function myhashtag()
+
+    public function img()
     {
-        return $this->belongsToMany(Hashtag::class,'hashtags_tweets','tweet_id');
-    } */
+        return $this->hasOne(File::class);
+    }
+
 }

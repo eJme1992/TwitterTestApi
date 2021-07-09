@@ -19,7 +19,7 @@ class CreateTweetsTable extends Migration
             $table->unsignedBigInteger('user_id')->unsigned()
             ->index()
             ->nullable();
-            $table->string('content');
+            $table->string('content',260);
             $table->timestamps();
             $table->foreign('user_id')
             ->references('id')

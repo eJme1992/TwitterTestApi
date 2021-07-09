@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Tweet;
 use App\Hashtag;
 use App\Hashtag_tweet;
+use App\File;
 use Illuminate\Http\Request;
 use Exception;
 
@@ -14,7 +15,7 @@ class TweetController extends Controller
 
     public function list(Request $request)
     {
-        $Tweet = Tweet::orderBy('created_at')->paginate();
+        $Tweet = Tweet::orderBy('created_at', 'desc')->paginate(4);
         $data = array(
             'status' => 'succes',
             'code' => 200,
@@ -58,15 +59,13 @@ class TweetController extends Controller
     {
 
          $json = $request->input('json', null);
-
          $params_array = json_decode($json, true);
-
          if (empty($params_array))
          {
           $data = array(
               'status' => 'error',
               'code'   =>  404,
-              'msj'    => 'el usuario no a sido creado ',
+              'msj'    => 'el Tweet no a sido creado ',
               'errors' => 'El Json no a sido escrito correctamente'
           );
           return response()->json($data, $data['code']);
@@ -82,7 +81,7 @@ class TweetController extends Controller
                 $data = array(
                      'status' =>  'error',
                      'code'   =>  404,
-                     'msj'    =>  'el usuario no a sido creado',
+                     'msj'    =>  'el Tweet no a sido creado',
                      'errors' => $validador->errors()
                  );
                  return response()->json($data, $data['code']);
@@ -105,10 +104,65 @@ class TweetController extends Controller
                  $data = array(
                      'status' => 'succes',
                      'code' => 200,
-                     'msj' => 'el usuario ha sido creado',
+                     'msj' => 'el Tweet ha sido creado',
+                     'id'  => $tweet->id
                  );
                 return response()->json($data, $data['code']);
     }
+
+    public function file(Request $request, $post)
+    {
+     $validador = \Validator::make($request->all(),
+                [
+                 'image'     => 'required|image|mimes:jpg,png,jpeg,gif'
+                ]
+      );
+     // Optiene datos del usuario que uso el metodo
+     $jwtAuth = new \JwtAuth();
+     $token   = $request->header('Authorization');
+     $user    = $jwtAuth->checkToken($token,true);
+     // Contiene la imagen
+     $imagen = $request->file('image');
+
+     // Verifico que la imagen sea treu osea exista y !$validador->fails() valida a la vez
+     if($imagen AND !$validador->fails()){
+         // Crea el nombre de la imagen
+         $image_name = time().$imagen->getClientOriginalName();
+         // Guarda en el disco user dentro de la carpeta storage/ user la imagen
+         \Storage::disk('users')->put($image_name,\File::get($imagen));
+
+         $File                    = new File();
+         $File->user_id           = $user->sub;
+         $File->slug              = str_shuffle($image_name.$user->sub.date("Ymd").uniqid());
+         $File->name              = $image_name;
+         $File->url               = 'users';
+         $File->type              = 'post';
+         $File->state             = 1;
+         $File->tweet_id          = $post;
+         $File->save();
+
+         $data = array(
+                    'status' => 'succes',
+                    'code'   => 200,
+                    'data'   => $File,
+                    'msj'    => 'El archivo ha sido subido correctamente',
+         );
+         return response()->json($data, $data['code']);
+     }
+
+    $data = array(
+                'status' => 'error',
+                'code'   =>  404,
+                'msj'    => 'El archivo no a sido subido',
+     );
+     return response()->json($data, $data['code']);
+    }
+
+
+
+
+
+
 
     /**
      * Display the specified resource.
